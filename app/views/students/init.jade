@@ -1,0 +1,8 @@
+extends ../shared/template
+block content
+  h1 Add a student
+  form(method="post", action="/students")
+    input(type='text', name='name', placeholder='Susan', autofocus=true)
+    input(type='color', name='color', value='#ff0000')
+    button Add
+

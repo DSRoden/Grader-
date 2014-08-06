@@ -96,13 +96,6 @@ describe('Student', function(){
     });
   });
 
-  describe('#addTest', function(){
-    it('should add test to student test array', function(){
-    liza.addTest(95);
-    expect(liza.tests).to.have.length(4);
-    });
-  });
-
   describe('#save', function(){
     it('should save a student to the database', function(done){
       var o = {name:'jane', color: 'blue'};
@@ -129,6 +122,20 @@ describe('Student', function(){
       Student.findById(jane._id.toString(), function(student){
         expect(student.name).to.equal('jane');
         done();
+      });
+    });
+  });
+
+  describe('#addTest', function(){
+    it('should add test to student test array', function(done){
+      Student.findById(liza._id.toString(), function(student){
+       student.addTest(95);
+       student.save(function(){
+        expect(student.tests).to.have.length(4);
+        expect(student.isSuspended).to.be.false;
+        expect(student.isHonor).to.be.true;
+        done();
+       });
       });
     });
   });

@@ -1,0 +1,21 @@
+extends ../shared/template
+
+block content
+  h1 Students
+  table#students
+    thead
+      tr
+        th Name
+        th Average
+        th Letter
+        th Suspended
+        th Honor Roll
+   tbody
+     each student in students
+       tr
+         td(style="background-color:#{student.color}"): a(href="/students/#{student._id}")= student.name
+         td(style="background-color: #{studentHelper.color(student.average)};")= student.average.toFixed(2)
+         td(style="background-color: #{studentHelper.color(student.average)};")= student.letter
+         td(style='background-color: #{student.isSuspended ? "#FF4136" : "#01FF70"};')
+         td(style='background-color: #{student.isHonorRoll ? "#01FF70" : "#0FF4136"};')
+     

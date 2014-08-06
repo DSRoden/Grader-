@@ -6,8 +6,6 @@ var Mongo = require('mongodb');
 function Student(o){
   this.name = o.name;
   this.tests = [];
-  this.isSuspended = false;
-  this.isHonor = false;
   this.color = o.color;
 }
 
@@ -15,58 +13,55 @@ Object.defineProperty(Student, 'collection', {
   get: function(){return global.mongodb.collection('students');}
 });
 
-Student.prototype.average = function(){
-  var sum = 0;
+Object.defineProperty(Student.prototype, 'average', {
+  get: function(){
+    if(!this.tests.length){return 0;}
 
-  for(var i = 0; i < this.tests.length; i++){
-    sum += this.tests[i]; 
+    var sum = this.tests.reduce(function(total, test){return total + test;});
+    return(sum/this.tests.length);
   }
- 
-  var avg= sum / this.tests.length;
-  return avg;
-};
+});
 
-Student.prototype.letterGrade = function(){
-  var averageGrade = this.average();
-  var letter;
-  if(averageGrade >= 90){
-    letter = 'A';
-  }else if(averageGrade >= 80){
-    letter = 'B';
-  }else if(averageGrade >= 70){
-    letter = 'C';
-  }else if(averageGrade >= 60){
-    letter = 'D';
-  }else{
-    letter = 'F';
+Object.defineProperty(Student.prototype, 'letter', {
+  get: function() {
+    var averageGrade = this.average;
+
+    if(averageGrade >= 90){
+      return 'A';
+    }else if(averageGrade >= 80){
+      return 'B';
+    }else if(averageGrade >= 70){
+      return 'C';
+    }else if(averageGrade >= 60){
+      return 'D';
+    }else{
+      return 'F';
+    } 
+  }  
+});
+
+Object.defineProperty(Student.prototype, 'isSuspended', {
+  get: function(){
+    var failingTests = this.tests.filter(function(t){return t < 60;});
+    return failingTests.length >= 3;
   }
-  return letter;
-};
+});
 
-Student.prototype.suspended = function(){
-  var fails = [];
-  for(var i = 0; i < this.tests.length; i++){
-    if(this.tests[i] < 60){
-      fails.push(this.tests[i]);
-    }
+Object.defineProperty(Student.prototype, 'isHonorRoll', {
+  get: function(){
+    return this.average >= 95;
   }
-  if(fails.length >= 3){
-    this.isSuspended = true;
-  }
-};
+});
 
-Student.prototype.honored = function(){
-  if (this.average() >= 95){
-    this.isHonor = true;
-  } 
-};
-
-Student.prototype.addTest = function(score){
-  this.tests.push(score);
-};
-
-Student.prototype.save = function(cb){
+Student.prototype.insert = function(cb){
   Student.collection.save(this, cb);
+};
+
+Student.prototype.addTest = function(score, cb){
+  score = parseFloat(score);
+
+  this.tests.push(score);
+  Student.collection.update({_id:this._id}, {$push: {tests:score}}, cb);
 };
 
 Student.all = function(cb){
@@ -78,16 +73,16 @@ Student.all = function(cb){
   });
 };
 
+
 Student.findById = function(id, cb){
   var _id = Mongo.ObjectID(id);
 
   Student.collection.findOne({_id:_id}, function(err, obj){
     var student = changePrototype(obj);
+   
     cb(student);
   });
 };
-
-module.exports = Student;
 
 //PRIVATE FUNCTIONS//
 
@@ -95,3 +90,9 @@ function changePrototype(obj){
   var student = _.create(Student.prototype, obj);
   return student;
 }
+
+
+
+
+
+

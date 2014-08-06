@@ -1,0 +1,16 @@
+extends ../shared/template
+block content
+  h2= student.name
+
+  a(href='/students/#{student._id)/test') Add Test
+  
+  ul
+    li= student.average.toFixed(2)
+    li= student.letter
+    li= student.isSuspended
+    li= student.isHonorRoll
+
+  #scores
+    each score in students.tests
+      .score(style='height:#{score}px;background-color:#{studentHelper.color(score)};')
+
